@@ -51,7 +51,6 @@ runcmd:
     - sudo chmod 777 rustup-init
     - ./rustup-init --default-toolchain nightly -y
     - sudo yum install -y cargo
-    - source /home/ec2-user/.cargo/env
     - git clone {SRC_REPO} disposables && cd disposables/collection
     - wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
     - sudo cargo build --release
