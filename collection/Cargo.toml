@@ -1,0 +1,34 @@
+[package]
+name = "collection"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+anyhow = { version = "1.0.68", features = ["backtrace"] }
+async_once = "0.2.6"
+chromiumoxide = { version = "0.4.0", features = ["tokio", "tokio-runtime"] }
+chrono = { version = "0.4.23", features = ["serde"] }
+clap = { version = "4.1.6", features = ["derive"] }
+crossbeam = { version = "0.8.2", features = ["crossbeam-channel"] }
+futures = "0.3.26"
+hashbrown = { version = "0.13.2", features = ["nightly", "serde"] }
+lazy_static = "1.4.0"
+log = "0.4.17"
+mongodb = { version = "2.3.1", features = ["bson-chrono-0_4"] }
+pretty_env_logger = "0.4.0"
+rayon = "1.6.1"
+serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.91"
+tokio = { version = "1.25.0", features = ["full"] }
+trust-dns-resolver = { version = "0.22.0", features = ["tokio", "serde", "serde-config"] }
+url = { version = "2.3.1", features = ["serde"] }
+
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[profile.release.build-override]
+opt-level = 3
+codegen-units = 1

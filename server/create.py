@@ -3,6 +3,7 @@ import argparse
 import json
 from itertools import islice
 import boto3
+import time
 
 REGION: str = "us-east-2"
 SRC_REPO = "https://github.com/conelul/disposables"
@@ -31,21 +32,25 @@ def main() -> None:
     #! Load input
     with open(args.input) as f:
         sites = json.load(f)
-        input_name = f.name
+        # input_name = f.name
     #! Deploy
     ssm = boto3.client("ssm", region_name=REGION)
     ec2 = boto3.client("ec2", region_name=REGION)
+    waiter = ec2.get_waiter('instance_status_ok')
     # Config to install SSM
-    init = """#cloud-config
+    init = f"""#cloud-config
 repo_update: true
 repo_upgrade: all
 
 runcmd:
     - sudo amazon-linux-extras install epel -y
-    - sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_arm64/amazon-ssm-agent.rpm
+    - sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
     - sudo yum install -y git
     - sudo yum install -y chromium
     - sudo yum install -y golang
+    - git clone {SRC_REPO} -o disposables/ && cd disposables/
+    - wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
+    
 """
     # Create servers
     servers = ec2.run_instances(
@@ -55,13 +60,22 @@ runcmd:
         MinCount=args.num_servers,
         MaxCount=args.num_servers,
     )
-    for (instance, inp) in zip(servers["Instances"], chunks(sites, args.num_servers)):
-        cmds = [f'echo {str(inp)} > input.json', f'git clone {SRC_REPO} -o src', f'cd src/collection && go mod tidy && go run main.go > log.txt']
-        resp = ssm.send_command(
-            InstanceIds=[instance["InstanceId"]],
-            DocumentName="AWS-RunShellScript",
-            Parameters={"commands": cmds},
-        )
+    # instance_ids = [instance["InstanceId"] for instance in servers["Instances"]]
+    # print(f"instance ids: {instance_ids}")
+    # print("waiting for server init")
+    # waiter.wait(InstanceIds=instance_ids)
+    # input("press enter when the servers are ready")
+    # for (instance, inp) in zip(servers["Instances"], chunks(sites, args.num_servers)):
+    #     cmds = [
+    #         f"echo {str(inp)} > input.json",
+    #         f"git clone {SRC_REPO} -o src",
+    #         f"cd src/collection && go mod tidy && go run main.go > log.txt",
+    #     ]
+    #     resp = ssm.send_command(
+    #         InstanceIds=[instance["InstanceId"]],
+    #         DocumentName="AWS-RunShellScript",
+    #         Parameters={"commands": cmds},
+    #     )
 
 
 # Clean input - run over 10 servers (~2k each) and then meet
