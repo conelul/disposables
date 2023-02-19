@@ -120,7 +120,7 @@ async fn main() -> Result<()> {
             .chrome_executable("/usr/bin/chromium-browser")
             .enable_request_intercept()
             .incognito()
-            .enable_cache()
+            // .enable_cache()
             .build()
             .map_err(|s| anyhow!(s))?,
     )
