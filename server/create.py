@@ -62,8 +62,8 @@ runcmd:
     - sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
     - sudo yum install -y git chromium gcc
     - cd /home/ec2-user/
-    - wget https://github.com/conelul/disposables/releases/download/collection/collection
-    - sudo chmod 777 collection
+    - wget https://github.com/conelul/disposables/releases/download/musl/collection
+    - sudo chmod 777 ./collection
     
 """
     # Create servers
@@ -83,7 +83,7 @@ runcmd:
     for (instance, inp) in zip(servers["Instances"], chunks):
         id = instance["InstanceId"]
         cmds = [
-            f"echo '{str(inp)}' > /home/ec2-user/input.json",
+            f"echo '{json.dumps(inp)}' > /home/ec2-user/input.json",
             f"cd /home/ec2-user && for ((i = 1 ; i <= {NUM_TRIALS} ; i++ )); do RUST_LOG=info ./collection --trial $i --server-id {id} --tabs {NUM_TABS} --load-time-ms {LOAD_TIME_MS} --input input.json --db-uri {DB_URI} --db-name disposables-proof --coll-name sites50 > $i.log 2>&1; done",
         ]
         resp = ssm.send_command(
