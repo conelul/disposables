@@ -21,6 +21,7 @@ use crossbeam::channel;
 use futures::{stream, StreamExt};
 use hashbrown::HashMap as Map;
 use lazy_static::lazy_static;
+use mongodb::bson::bson;
 use mongodb::{
     bson::{self, doc},
     options::UpdateOptions,
@@ -34,7 +35,6 @@ use trust_dns_resolver::{
     TokioAsyncResolver,
 };
 use url::Url;
-use mongodb::bson::bson;
 #[derive(Parser, Debug)]
 struct Args {
     #[arg(long)]
@@ -114,7 +114,7 @@ async fn main() -> Result<()> {
 
     let (raw_browser, mut handler) = Browser::launch(
         BrowserConfig::builder()
-            .with_head()
+            .chrome_executable("/usr/bin/chromium-browser")
             .enable_request_intercept()
             .incognito()
             .enable_cache()
