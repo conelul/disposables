@@ -40,6 +40,8 @@ struct Args {
     #[arg(long)]
     trial: i32,
     #[arg(long)]
+    server_id: String,
+    #[arg(long)]
     tabs: usize,
     #[arg(short, long)]
     load_time_ms: u64,
@@ -74,6 +76,7 @@ struct Trial {
     time: NaiveDateTime,
     ver: GetVersionReturns,
     num: i32,
+    server_id: String,
     resources: Vec<Resource>,
     trial_success: bool,
 }
@@ -302,6 +305,7 @@ async fn main() -> Result<()> {
                         time: Utc::now().naive_local(),
                         ver: v,
                         num: ARGS.trial,
+                        server_id: ARGS.server_id.clone(),
                         resources,
                         trial_success: false,
                     };
@@ -340,7 +344,7 @@ async fn main() -> Result<()> {
         }
     }
     coll.update_many(
-        doc! { "trials.num": &ARGS.trial },
+        doc! { "trials.num": &ARGS.trial, "trials.server_id": &ARGS.server_id },
         doc! {"$set" : {"trials.$.trial_success" : true} },
         None,
     )
