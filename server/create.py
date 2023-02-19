@@ -43,17 +43,15 @@ repo_update: true
 repo_upgrade: all
 
 runcmd:
+    - export HOME=/home/ec2-user
     - sudo amazon-linux-extras install epel -y
     - sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-    - sudo yum install -y git chromium
-    - cd /home/ec2-user
-    - wget https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-musl/rustup-init
-    - sudo chmod 777 rustup-init
-    - ./rustup-init --default-toolchain nightly -y
-    - sudo yum install -y cargo
+    - sudo yum install -y git chromium gcc
+    - sudo chown -R ec2-user /home/ec2-user/
+    - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly -y
+    - cd /home/ec2-user/
     - git clone {SRC_REPO} disposables && cd disposables/collection
     - wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
-    - sudo cargo build --release
     
 """
     # Create servers
@@ -61,8 +59,8 @@ runcmd:
         LaunchTemplate={"LaunchTemplateId": "lt-02c15b50d3a70c40f"},
         UserData=init,
         # SecurityGroupIds=["sg-0816ba1f92424b2f6"],
-        MinCount=args.num_servers,
-        MaxCount=args.num_servers,
+        MinCount=int(args.num_servers),
+        MaxCount=int(args.num_servers),
     )
     instance_ids = [instance["InstanceId"] for instance in servers["Instances"]]
     print(f"instance ids: {instance_ids}")
